@@ -40,6 +40,9 @@
 #include <isl/ilp.h>
 #include <isl_val_private.h>
 
+// DEBUG
+#include <stdio.h>
+
 /*
  * The scheduling algorithm implemented in this file was inspired by
  * Bondhugula et al., "Automatic Transformations for Communication-Minimized
@@ -7600,6 +7603,9 @@ static __isl_give isl_schedule_node *compute_schedule(isl_schedule_node *node,
 __isl_give isl_schedule *isl_schedule_constraints_compute_schedule(
 	__isl_take isl_schedule_constraints *sc)
 {
+	// DEBUG
+	printf("isl_schedule_constraints_compute_schedule\n");
+
 	isl_ctx *ctx = isl_schedule_constraints_get_ctx(sc);
 	struct isl_sched_graph graph = { 0 };
 	isl_schedule *sched;

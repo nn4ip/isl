@@ -25,6 +25,9 @@
 
 #include <bset_to_bmap.c>
 
+// DEBUG
+#include <stdio.h>
+
 /*
  * The implementation of parametric integer linear programming in this file
  * was inspired by the paper "Parametric Integer Programming" and the
@@ -5496,6 +5499,9 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 	struct isl_trivial_region *region,
 	int (*conflict)(int con, void *user), void *user)
 {
+	// DEBUG
+	printf("  isl_tab_basic_set_non_trivial_lexmin\n");
+
 	struct isl_lexmin_data data = { n_op, n_region, region };
 	int level, init;
 
