@@ -3105,6 +3105,9 @@ static __isl_give isl_mat *construct_trivial(__isl_keep isl_mat *indep)
  */
 static __isl_give isl_vec *solve_lp(isl_ctx *ctx, struct isl_sched_graph *graph)
 {
+	// DEBUG
+	printf("  solve_lp:\n");
+
 	int i;
 	isl_vec *sol;
 	isl_basic_set *lp;
@@ -7604,7 +7607,7 @@ __isl_give isl_schedule *isl_schedule_constraints_compute_schedule(
 	__isl_take isl_schedule_constraints *sc)
 {
 	// DEBUG
-	printf("isl_schedule_constraints_compute_schedule\n");
+	printf("isl_schedule_constraints_compute_schedule:\n");
 
 	isl_ctx *ctx = isl_schedule_constraints_get_ctx(sc);
 	struct isl_sched_graph graph = { 0 };

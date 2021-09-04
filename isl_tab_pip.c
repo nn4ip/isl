@@ -5458,6 +5458,35 @@ static void clear_lexmin_data(struct isl_lexmin_data *data)
 	isl_tab_free(data->tab);
 }
 
+// DEBUG
+__isl_give char *isl_mat_to_str(
+	__isl_keep isl_mat *mat, unsigned indent
+)
+{
+	int i, j;
+	char *str;
+	isl_size n_row, n_col;
+
+	n_row = isl_mat_rows(mat);
+	n_col = isl_mat_cols(mat);
+
+	str = isl_calloc(mat->ctx, char, 10 * n_row * n_col);
+
+	for (i = 0; i < n_row; ++i) {
+		for (j = 0; j < indent; ++j) {
+			sprintf(str + strlen(str), " ");
+		}
+		for (j = 0; j < n_col; ++j) {
+			sprintf(str + strlen(str), "%s, ", isl_val_to_str(isl_mat_get_element_val(mat, i, j)));
+		}
+		sprintf(str + strlen(str), "\n");
+	}
+
+	// printf("%s...", str);
+
+	return str;
+}
+
 /* Return the lexicographically smallest non-trivial solution of the
  * given ILP problem.
  *
@@ -5500,7 +5529,11 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 	int (*conflict)(int con, void *user), void *user)
 {
 	// DEBUG
-	printf("  isl_tab_basic_set_non_trivial_lexmin\n");
+	printf("    isl_tab_basic_set_non_trivial_lexmin:\n");
+	printf("      n_region: %d\n", n_region);
+	printf("      region->pos: %d\n", region->pos);
+	printf("%s\n", isl_mat_to_str(region->trivial, 6));
+	printf("      %s\n", isl_basic_set_to_str(bset));
 
 	struct isl_lexmin_data data = { n_op, n_region, region };
 	int level, init;

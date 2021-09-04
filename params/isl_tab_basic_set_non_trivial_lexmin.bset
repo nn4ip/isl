@@ -1,0 +1,10 @@
+{ 
+  [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9] : 
+    i7 = i3 - i6 and 
+    i5 = i0 - i4 and 
+    i5 >= i4 and 
+    i7 >= i4 - i5 + i6 and 
+    i6 <= i7 <= i6 and 
+    i7 <= i1 - 2i4 + 2i5 + i6 and 
+    i8 <= i9 <= i1 - i4 + i5 + i8 
+}
