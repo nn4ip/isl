@@ -5354,6 +5354,10 @@ static enum isl_next enter_level(int level, int init,
 		if (data->tab->empty)
 			return isl_next_backtrack;
 		r = first_trivial_region(data);
+
+		// DEBUG
+		printf("          enter_level: first_trivial_region=%d\n", r);
+
 		if (r < 0)
 			return isl_next_error;
 		if (r == data->n_region) {
@@ -5528,13 +5532,6 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 	struct isl_trivial_region *region,
 	int (*conflict)(int con, void *user), void *user)
 {
-	// DEBUG
-	printf("    isl_tab_basic_set_non_trivial_lexmin:\n");
-	printf("      n_region: %d\n", n_region);
-	printf("      region->pos: %d\n", region->pos);
-	printf("%s\n", isl_mat_to_str(region->trivial, 6));
-	printf("      %s\n", isl_basic_set_to_str(bset));
-
 	struct isl_lexmin_data data = { n_op, n_region, region };
 	int level, init;
 
@@ -5545,6 +5542,20 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 		goto error;
 	data.tab->conflict = conflict;
 	data.tab->conflict_user = user;
+
+	// DEBUG
+	int ri;
+	printf("    isl_tab_basic_set_non_trivial_lexmin:\n");
+	printf("      n_region: %d\n", n_region);
+	
+	for (ri = 0; ri < n_region; ++ri) {
+		printf("        region.pos: %d\n", region[ri].pos);
+		printf("        trivial: %d\n", region_is_trivial(data.tab, region[ri].pos, region[ri].trivial));
+		printf("%s", isl_mat_to_str(region[ri].trivial, 8));
+	}
+
+	printf("      %s\n\n", isl_basic_set_to_str(bset));
+	// END DEBUG
 
 	level = 0;
 	init = 1;
