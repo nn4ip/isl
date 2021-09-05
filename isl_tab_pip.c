@@ -5481,7 +5481,7 @@ __isl_give char *isl_mat_to_str(
 			sprintf(str + strlen(str), " ");
 		}
 		for (j = 0; j < n_col; ++j) {
-			sprintf(str + strlen(str), "%s, ", isl_val_to_str(isl_mat_get_element_val(mat, i, j)));
+			sprintf(str + strlen(str), "%s\t", isl_val_to_str(isl_mat_get_element_val(mat, i, j)));
 		}
 		sprintf(str + strlen(str), "\n");
 	}
@@ -5546,7 +5546,18 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 	// DEBUG
 	int ri;
 	printf("    isl_tab_basic_set_non_trivial_lexmin:\n");
+
+	printf("      data.tab->var[].index:\n        ");
+	for (ri = 0; ri < data.tab->n_var; ++ri) {
+		printf("%d ", data.tab->var[ri].index);
+	}
+	printf("\n");
+
+	printf("      data.tab->mat:\n");
+	printf("%s", isl_mat_to_str(data.tab->mat, 8));
+
 	printf("      n_region: %d\n", n_region);
+	printf("      first trivial region: %d\n", first_trivial_region(&data));
 	
 	for (ri = 0; ri < n_region; ++ri) {
 		printf("        region.pos: %d\n", region[ri].pos);
@@ -5554,6 +5565,7 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 		printf("%s", isl_mat_to_str(region[ri].trivial, 8));
 	}
 
+	printf("      n_eq=%d, n_ineq=%d\n", bset->n_eq, bset->n_ineq);
 	printf("      %s\n\n", isl_basic_set_to_str(bset));
 	// END DEBUG
 
