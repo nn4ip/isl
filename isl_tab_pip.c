@@ -28,6 +28,35 @@
 // DEBUG
 #include <stdio.h>
 
+// DEBUG
+__isl_give char *isl_mat_to_str(
+	__isl_keep isl_mat *mat, unsigned indent
+)
+{
+	int i, j;
+	char *str;
+	isl_size n_row, n_col;
+
+	n_row = isl_mat_rows(mat);
+	n_col = isl_mat_cols(mat);
+
+	str = isl_calloc(mat->ctx, char, 10 * n_row * n_col);
+
+	for (i = 0; i < n_row; ++i) {
+		for (j = 0; j < indent; ++j) {
+			sprintf(str + strlen(str), " ");
+		}
+		for (j = 0; j < n_col; ++j) {
+			sprintf(str + strlen(str), "%s\t", isl_val_to_str(isl_mat_get_element_val(mat, i, j)));
+		}
+		sprintf(str + strlen(str), "\n");
+	}
+
+	// printf("%s...", str);
+
+	return str;
+}
+
 /*
  * The implementation of parametric integer linear programming in this file
  * was inspired by the paper "Parametric Integer Programming" and the
@@ -2347,6 +2376,18 @@ static __isl_give struct isl_tab *tab_for_lexmin(__isl_keep isl_basic_map *bmap,
 			isl_seq_neg(bmap->eq[i] + o_var,
 				    bmap->eq[i] + o_var, n_var);
 		tab = add_lexmin_valid_eq(tab, bmap->eq[i]);
+
+		// DEBUG
+		// int j;
+		// printf("        add eq: ");
+		// for (j = 0; j < tab->n_var + 1; ++j) {
+		// 	printf("%s ", isl_int_get_str(bmap->eq[i][j]));
+		// }
+		// printf("\n");
+
+		// printf("%s", isl_mat_to_str(tab->mat, 8));
+		// END DEBUG
+
 		if (max)
 			isl_seq_neg(bmap->eq[i] + o_var,
 				    bmap->eq[i] + o_var, n_var);
@@ -5462,35 +5503,6 @@ static void clear_lexmin_data(struct isl_lexmin_data *data)
 	isl_tab_free(data->tab);
 }
 
-// DEBUG
-__isl_give char *isl_mat_to_str(
-	__isl_keep isl_mat *mat, unsigned indent
-)
-{
-	int i, j;
-	char *str;
-	isl_size n_row, n_col;
-
-	n_row = isl_mat_rows(mat);
-	n_col = isl_mat_cols(mat);
-
-	str = isl_calloc(mat->ctx, char, 10 * n_row * n_col);
-
-	for (i = 0; i < n_row; ++i) {
-		for (j = 0; j < indent; ++j) {
-			sprintf(str + strlen(str), " ");
-		}
-		for (j = 0; j < n_col; ++j) {
-			sprintf(str + strlen(str), "%s\t", isl_val_to_str(isl_mat_get_element_val(mat, i, j)));
-		}
-		sprintf(str + strlen(str), "\n");
-	}
-
-	// printf("%s...", str);
-
-	return str;
-}
-
 /* Return the lexicographically smallest non-trivial solution of the
  * given ILP problem.
  *
@@ -5549,7 +5561,7 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 
 	printf("      data.tab->var[].index:\n        ");
 	for (ri = 0; ri < data.tab->n_var; ++ri) {
-		printf("%d ", data.tab->var[ri].index);
+		printf("%d ", data.tab->var[ri].is_row ? data.tab->var[ri].index : -1);
 	}
 	printf("\n");
 
@@ -5560,9 +5572,10 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 	printf("      first trivial region: %d\n", first_trivial_region(&data));
 	
 	for (ri = 0; ri < n_region; ++ri) {
-		printf("        region.pos: %d\n", region[ri].pos);
 		printf("        trivial: %d\n", region_is_trivial(data.tab, region[ri].pos, region[ri].trivial));
-		printf("%s", isl_mat_to_str(region[ri].trivial, 8));
+		printf("          region.pos: %d\n", region[ri].pos);
+		printf("          region.trivial:\n");
+		printf("%s", isl_mat_to_str(region[ri].trivial, 12));
 	}
 
 	printf("      n_eq=%d, n_ineq=%d\n", bset->n_eq, bset->n_ineq);
