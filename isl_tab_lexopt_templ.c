@@ -11,6 +11,9 @@
  * ZAC des vignes, 4 rue Jacques Monod, 91893 Orsay, France
  */
 
+// DEBUG
+#include <stdio.h>
+
 #define xSF(TYPE,SUFFIX) TYPE ## SUFFIX
 #define SF(TYPE,SUFFIX) xSF(TYPE,SUFFIX)
 
@@ -202,6 +205,9 @@ __isl_give TYPE *SF(isl_tab_basic_map_partial_lexopt,SUFFIX)(
 {
 	int max, full;
 	isl_bool compatible;
+
+	// DEBUG
+	printf("isl_tab_basic_map_partial_lexopt\n");
 
 	if (empty)
 		*empty = NULL;
