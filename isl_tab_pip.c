@@ -5397,7 +5397,14 @@ static enum isl_next enter_level(int level, int init,
 		r = first_trivial_region(data);
 
 		// DEBUG
-		printf("          enter_level: first_trivial_region=%d\n", r);
+		printf("          enter_level: first_trivial_region=%d/%d\n", r, data->n_region);
+		int ri;
+		printf("          solution (%d):\n            ", isl_vec_size(isl_tab_get_sample_value(data->tab)));
+		for (ri = 0; ri < isl_vec_size(isl_tab_get_sample_value(data->tab)); ++ri) {
+			printf("%s ", isl_val_to_str(isl_vec_get_element_val(isl_tab_get_sample_value(data->tab), ri)));
+		}
+		printf("\n");
+		
 
 		if (r < 0)
 			return isl_next_error;
@@ -5559,27 +5566,28 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 	int ri;
 	printf("    isl_tab_basic_set_non_trivial_lexmin:\n");
 
-	printf("      data.tab->var[].index:\n        ");
-	for (ri = 0; ri < data.tab->n_var; ++ri) {
-		printf("%d ", data.tab->var[ri].is_row ? data.tab->var[ri].index : -1);
-	}
-	printf("\n");
+	printf("      %s\n", isl_basic_set_to_str(bset));
+
+	// printf("      data.tab->var[].index:\n        ");
+	// for (ri = 0; ri < data.tab->n_var; ++ri) {
+	// 	printf("%d ", data.tab->var[ri].is_row ? data.tab->var[ri].index : -1);
+	// }
+	// printf("\n");
 
 	printf("      data.tab->mat:\n");
 	printf("%s", isl_mat_to_str(data.tab->mat, 8));
 
 	printf("      n_region: %d\n", n_region);
-	printf("      first trivial region: %d\n", first_trivial_region(&data));
+	// printf("      first trivial region: %d\n", first_trivial_region(&data));
 	
 	for (ri = 0; ri < n_region; ++ri) {
-		printf("        trivial: %d\n", region_is_trivial(data.tab, region[ri].pos, region[ri].trivial));
+		// printf("        trivial: %d\n", region_is_trivial(data.tab, region[ri].pos, region[ri].trivial));
 		printf("          region.pos: %d\n", region[ri].pos);
 		printf("          region.trivial:\n");
 		printf("%s", isl_mat_to_str(region[ri].trivial, 12));
 	}
 
-	printf("      n_eq=%d, n_ineq=%d\n", bset->n_eq, bset->n_ineq);
-	printf("      %s\n\n", isl_basic_set_to_str(bset));
+	// printf("      n_eq=%d, n_ineq=%d\n", bset->n_eq, bset->n_ineq);
 	// END DEBUG
 
 	level = 0;
@@ -5612,6 +5620,13 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 
 	clear_lexmin_data(&data);
 	isl_basic_set_free(bset);
+
+	// DEBUG
+	printf("    solution (%d):\n      ", isl_vec_size(data.sol));
+	for (ri = 0; ri < isl_vec_size(data.sol); ++ri) {
+		printf("%s ", isl_val_to_str(isl_vec_get_element_val(data.sol, ri)));
+	}
+	printf("\n");
 
 	return data.sol;
 error:

@@ -207,7 +207,7 @@ __isl_give TYPE *SF(isl_tab_basic_map_partial_lexopt,SUFFIX)(
 	isl_bool compatible;
 
 	// DEBUG
-	printf("isl_tab_basic_map_partial_lexopt\n");
+	// printf("isl_tab_basic_map_partial_lexopt\n");
 
 	if (empty)
 		*empty = NULL;
