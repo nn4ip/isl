@@ -5390,6 +5390,10 @@ static enum isl_next enter_level(int level, int init,
 		int r;
 
 		data->tab = cut_to_integer_lexmin(data->tab, CUT_ONE);
+
+		// DEBUG
+		// printf("%s", isl_mat_to_str(data->tab->mat, 10));
+
 		if (!data->tab)
 			return isl_next_error;
 		if (data->tab->empty)
@@ -5404,37 +5408,38 @@ static enum isl_next enter_level(int level, int init,
 			printf("%s ", isl_val_to_str(isl_vec_get_element_val(isl_tab_get_sample_value(data->tab), ri)));
 		}
 		printf("\n");
+		// END DEBUG
 		
 
 		if (r < 0)
 			return isl_next_error;
-		if (r == data->n_region) {
+		if (r == data->n_region) {	// satisfies all regions: finds a feasible solution
 			update_outer_levels(data, level);
 			isl_vec_free(data->sol);
 			data->sol = isl_tab_get_sample_value(data->tab);
 			if (!data->sol)
 				return isl_next_error;
-			if (is_optimal(data->sol, data->n_op))
+			if (is_optimal(data->sol, data->n_op))	// optimal: exits backtracking search
 				return isl_next_done;
-			return isl_next_backtrack;
+			return isl_next_backtrack;	// suboptimal: backtracks and looks for a better solution
 		}
 		if (level >= data->n_region)
 			isl_die(isl_vec_get_ctx(data->v), isl_error_internal,
 				"nesting level too deep",
 				return isl_next_error);
-		if (init_local_region(local, r, data) < 0)
+		if (init_local_region(local, r, data) < 0)	// sets flag to deal with this unsatisified region
 			return isl_next_error;
 		if (isl_tab_extend_cons(data->tab,
-				    2 * local->n + 2 * data->n_op) < 0)
+				    2 * local->n + 2 * data->n_op) < 0)	// allocate space in tableau for additional constraints?
 			return isl_next_error;
-	} else {
+	} else {	// not the first time to enter this level
 		if (isl_tab_rollback(data->tab, local->snap) < 0)
 			return isl_next_error;
 	}
 
 	if (finished_all_cases(local, data))
 		return isl_next_backtrack;
-	return isl_next_handle;
+	return isl_next_handle;	// handles current (unsatisfied) region
 }
 
 /* If a solution has been found in the previous case at this level
@@ -5598,6 +5603,8 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 		struct isl_local_region *local = &data.local[level];
 
 		next = enter_level(level, init, &data);
+		// DEBUG
+		printf("      next=%d\n", next);
 		if (next < 0)
 			goto error;
 		if (next == isl_next_done)
@@ -5608,9 +5615,11 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 			continue;
 		}
 
-		if (better_next_side(local, &data) < 0)
+		// only falls through when next == isl_next_handle, i.e. needs to handle an unsatisfied region
+
+		if (better_next_side(local, &data) < 0)	// if there is an existing feasible solution in previous cases, enforce a better solution next
 			goto error;
-		if (pick_side(local, &data) < 0)
+		if (pick_side(local, &data) < 0) // add constraints to tableau according to chosen case (local->side)
 			goto error;
 
 		local->side++;
