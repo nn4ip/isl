@@ -1,0 +1,31 @@
+Internal Representation: bset
+use isl_local_region
+
+while (level >= 0):
+    next = enter_level()
+    if (next == done):
+        break
+    elif (next == backtrack):
+        level--
+        init = 0
+        continue
+    else:
+        if (feasible solution in previous case):
+            *force_better_solution*         // force the first relevant non-zero coefficient and all previous coefficients to be zero
+        *pick_side*         // add constraints to select case according to local->side
+        
+
+enter_level:
+    if (init):
+        nn_solve()
+        if (satisfied):
+            if (optimal):
+                *done*
+            else:
+                *backtrack*
+    else:
+        retrieve previous state
+    if (finished_all_cases):
+        *backtrack*
+    else:
+        *handle*
