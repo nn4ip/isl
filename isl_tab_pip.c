@@ -1536,10 +1536,18 @@ static struct isl_tab *add_lexmin_valid_eq(struct isl_tab *tab, isl_int *eq)
 	if (!tab)
 		return NULL;
 	r = isl_tab_add_row(tab, eq);
+
+	// DEBUG
+	printf("        add_lexmin_valid_eq: r = %d\n", r);
+
 	if (r < 0)
 		goto error;
 
 	r = tab->con[r].index;
+
+	// DEBUG
+	printf("        add_lexmin_valid_eq: con[r].index = %d\n", r);
+
 	i = last_var_col_or_int_par_col(tab, r);
 	if (i < 0) {
 		tab->con[r].is_nonneg = 1;
@@ -2371,6 +2379,12 @@ static __isl_give struct isl_tab *tab_for_lexmin(__isl_keep isl_basic_map *bmap,
 	}
 	o_var = 1 + tab->n_param;
 	n_var = tab->n_var - tab->n_param - tab->n_div;
+
+	// DEBUG
+	printf("        before adding equations:\n");
+	printf("        n_row = %d, n_con = %d\n", tab->n_row, tab->n_con);
+	printf("%s", isl_mat_to_str(tab->mat, 8));
+
 	for (i = 0; i < bmap->n_eq; ++i) {
 		if (max)
 			isl_seq_neg(bmap->eq[i] + o_var,
@@ -2378,14 +2392,20 @@ static __isl_give struct isl_tab *tab_for_lexmin(__isl_keep isl_basic_map *bmap,
 		tab = add_lexmin_valid_eq(tab, bmap->eq[i]);
 
 		// DEBUG
-		// int j;
-		// printf("        add eq: ");
-		// for (j = 0; j < tab->n_var + 1; ++j) {
-		// 	printf("%s ", isl_int_get_str(bmap->eq[i][j]));
-		// }
-		// printf("\n");
+		int j;
+		printf("        add equation %d: ", i);
+		for (j = 0; j < tab->n_var + 1; ++j) {
+			printf("%s ", isl_int_get_str(bmap->eq[i][j]));
+		}
+		printf("\n");
+		printf("        n_row = %d, n_con = %d\n", tab->n_row, tab->n_con);
+		printf("        tab->con[].is_row: ");
+		for (j = 0; j < 2 * bmap->n_eq + bmap->n_ineq + 1; ++j) {
+			printf("%d ", tab->con[j].is_row);
+		}
+		printf("\n");
 
-		// printf("%s", isl_mat_to_str(tab->mat, 8));
+		printf("%s", isl_mat_to_str(tab->mat, 8));
 		// END DEBUG
 
 		if (max)
@@ -5562,6 +5582,11 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 	if (!bset)
 		return NULL;
 
+	// DEBUG
+	if (freopen("debug_output.txt", "a", stdout) == NULL) {
+		printf("freopen failed!\n");
+	}
+	
 	if (init_lexmin_data(&data, bset) < 0)
 		goto error;
 	data.tab->conflict = conflict;
@@ -5581,6 +5606,12 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 
 	printf("      data.tab->mat:\n");
 	printf("%s", isl_mat_to_str(data.tab->mat, 8));
+
+	printf("      solution (%d):\n        ", isl_vec_size(isl_tab_get_sample_value(data.tab)));
+	for (ri = 0; ri < isl_vec_size(isl_tab_get_sample_value(data.tab)); ++ri) {
+		printf("%s ", isl_val_to_str(isl_vec_get_element_val(isl_tab_get_sample_value(data.tab), ri)));
+	}
+	printf("\n");
 
 	printf("      n_region: %d\n", n_region);
 	// printf("      first trivial region: %d\n", first_trivial_region(&data));
@@ -5621,6 +5652,16 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 			goto error;
 		if (pick_side(local, &data) < 0) // add constraints to tableau according to chosen case (local->side)
 			goto error;
+		
+		// DEBUG
+		printf("data.tab->mat after pick_side:\n");
+		printf("%s", isl_mat_to_str(data.tab->mat, 2));
+
+		printf("solution (%d):\n  ", isl_vec_size(isl_tab_get_sample_value(data.tab)));
+		for (ri = 0; ri < isl_vec_size(isl_tab_get_sample_value(data.tab)); ++ri) {
+			printf("%s ", isl_val_to_str(isl_vec_get_element_val(isl_tab_get_sample_value(data.tab), ri)));
+		}
+		printf("\n");
 
 		local->side++;
 		level++;
@@ -5636,6 +5677,7 @@ __isl_give isl_vec *isl_tab_basic_set_non_trivial_lexmin(
 		printf("%s ", isl_val_to_str(isl_vec_get_element_val(data.sol, ri)));
 	}
 	printf("\n");
+	fclose(stdout);
 
 	return data.sol;
 error:
